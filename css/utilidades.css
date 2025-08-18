@@ -1,0 +1,89 @@
+
+        .seccion-principal {
+            background-image: url("../img/imgfondo.jpg");
+			background-size: cover;
+            background-repeat: no-repeat;
+            background-attachment: fixed;
+        }
+
+        div#loginBox::before{
+            content:'';
+            position:absolute;
+            z-index:-1;
+            top:0;
+            left:0;
+            bottom:0;
+            right:0;
+            background:url(../img/banner-principal-terrenos-ciudad-maderas.webp) fixed center;
+            filter:blur(4px);
+            background-size:100vw auto;
+        }
+
+		.login-page{
+            
+            background-image:url(../img/banner-principal-terrenos-ciudad-maderas.webp);
+			background-position: center;
+			background-repeat: no-repeat;
+			background-size: cover;
+			position: relative;
+		}
+		
+		.login-logo{
+            font-family: "Times New Roman", Times, serif;
+			color: #fff;
+			font-weight: 500;
+			font-size: 2em;
+		}
+
+        .modal-alertas{
+            text-align: center;
+            padding: 0!important;
+        }
+
+        .modal-alertas:before {
+            content: '';
+            display: inline-block;
+            height: 100%;
+            vertical-align: middle;
+            margin-right: -4px; /* Adjusts for spacing */
+        }
+        
+        .modal-alertas .modal-dialog {
+            display: inline-block;
+            text-align: left;
+            vertical-align: middle;
+        }
+
+        .modal-alertas .modal-dialog {
+            width: 20%;
+            display: inline-block;
+            text-align: left;
+            vertical-align: middle;
+        }
+        
+        #canvas {
+            border: 1px solid black;
+            position: absolute;
+            z-index: 10000;
+        }
+
+        #flake {
+            color: #fff;
+            position: absolute;
+            font-size: 25px;
+            top: -50px;
+        }
+
+        #page {
+            position: relative;
+        }
+          
+        .notification .badge {
+            z-index: 4;
+            position: absolute;
+            top: -10px;
+            padding: 5px 10px;
+            border-radius: 50%;
+            background: red;
+            color: white;
+        }

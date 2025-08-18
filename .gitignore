@@ -1,0 +1,53 @@
+.DS_Store
+
+application/cache/*
+!application/cache/index.html
+
+application/logs/*
+!application/logs/index.html
+
+application/config/config.php
+application/config/database.php
+<<<<<<< HEAD
+<<<<<<< HEAD
+application/vendor/
+=======
+application/vendor/*
+>>>>>>> parent of a055188c (Actualizacion de la carpeta vendor IGNORAR COMMIT)
+=======
+application/vendor/*
+>>>>>>> parent of a055188c (Actualizacion de la carpeta vendor IGNORAR COMMIT)
+application/vendor_new/*
+#!application/*/.htaccess
+application/vendor_new/*
+
+vendor/*
+vendor_new/*
+vendor_old/*
+
+composer.lock
+
+user_guide_src/build/*
+user_guide_src/cilexer/build/*
+user_guide_src/cilexer/dist/*
+user_guide_src/cilexer/pycilexer.egg-info/*
+/vendor/*
+/vendor_new/*
+
+# IDE Files
+#-------------------------
+/nbproject/
+.idea/*
+
+## Sublime Text cache files
+*.tmlanguage.cache
+*.tmPreferences.cache
+*.stTheme.cache
+*.sublime-workspace
+*.sublime-project
+/tests/tests/
+/tests/results/
+
+.vscode/*
+.svn/*
+UPLOADS/*

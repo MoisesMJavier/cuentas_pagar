@@ -1,0 +1,101 @@
+div#loginBox{
+    height: auto;
+    width: 28%;
+    margin: 5% 35% 0 35%;
+    position:absolute;
+    border: 1px solid #365c6f;
+    padding: 0;
+    text-align: center;
+    color: #ffffff;
+    box-shadow: 0px 1px 5px #000000;
+    overflow: hidden;
+}
+#blkblur{
+    background-color:rgba(54,92,111,0.60);
+    width:calc(100%-1em);
+    height:100%;
+    margin:0;
+    padding:1em 1em 3em 1em;
+}
+#loginBox img{
+    margin: 0.5em 0 0.5em 0;
+    width: 80%;
+    height: auto;
+}
+#loginBox form{
+    margin:0;
+    padding: 2em 0 0 0;
+}
+#loginBox input{
+    border: 0;
+    border-bottom: 1px solid #ffffff;
+    padding: 0.5em;
+    margin: 1em 0 0.5em 0.5em;
+    background-color: transparent;
+    color: #ffffff;
+    width: 70%;
+    height: 2em;
+}
+#loginBox input:focus{
+    color: #ffffff;
+    outline: none;
+    border-radius: 3px;
+    background-color: #ffffff;
+    color: #000000;
+}
+#loginBox input::placeholder{
+    color: #ffffff;
+}
+#loginBox input:focus::placeholder{
+    color: #000000;
+}
+#loginBox button{
+    width: 85%;
+    height: 3em;
+    padding:0;
+    display: block;
+    margin: 3em 0 0 7.5%;
+    background-color: #2980b9;
+    color: #ffffff;
+    border: 0;
+    cursor: pointer;
+}
+hr{
+    border: 1px solid #ffffff;
+}
+input.ipt{
+    display: inline-block;
+}
+span.iptadd{
+    color: #ffffff;
+    display: inline-block;
+}
+@media screen and (max-width: 768px) {
+    div#loginBox{
+        height: auto;
+        width: 90%;
+        height: auto;
+        margin: 15% 5% 0 5%;
+        border: 1px solid #365c6f;
+        padding: 0;
+        text-align: center;
+        color: #ffffff;
+        box-shadow: 0px 1px 5px #000000;
+        overflow: hidden;
+    }
+    div#loginBox::before{
+        content:'';
+        position:absolute;
+        z-index:-1;
+        top:0;
+        left:0;
+        bottom:0;
+        right:0;
+        background:url(../img/banner-principal-terrenos-ciudad-maderas.webp) fixed center;
+        filter:blur(4px);
+        background-image:url(../img/banner-principal-terrenos-ciudad-maderas.webp);
+        background-size:cover;
+        background-position:center;
+        background-repeat: no-repeat;
+    }
+}

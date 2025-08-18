@@ -1,0 +1,23 @@
+name: Desplegar proyecto en ambiente PRUEBAS
+
+on:
+    push:
+        branches:
+            - master
+
+jobs:
+    deploy:
+        runs-on: ubuntu-latest
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v2
+
+#            - name: Copy files via SSH key
+#              uses: appleboy/scp-action@master
+#              with:
+#                  host: 104.198.134.0
+#                  username: prohab
+#                  key: ${{ secrets.SFTP_SSH_PRIVATE_KEY }}
+#                  source: "./"
+#                  target: /mnt/data/aplicaciones/Prueba/CXP
+#                  overwrite: true
