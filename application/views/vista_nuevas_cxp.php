@@ -713,6 +713,8 @@ Fecha : 12-Agosto-2025 @author Efrain Martinez Muñoz <programador.analista38@ci
 <script>
     var idUsuario = <?= $this->session->userdata("inicio_sesion")['id'] ?>; /** FECHA: 17-JUNIO-2025 | PANEL CP A USUARIOS ESPECIFICOS | @author Angel Victoriano <programador.analista30@ciudadmaderas.com> **/
 
+   
+
     $(document).ready(function(e){
 
         $("#fechaini_mod").datepicker({
@@ -747,6 +749,8 @@ Fecha : 12-Agosto-2025 @author Efrain Martinez Muñoz <programador.analista38@ci
     var fecha_hoy = new Date();
     var rol = `<?= $this->session->userdata("inicio_sesion")['rol'] ?>`;
     $('.select2').select2();
+
+     console.log(idUsuario, "rol: ",rol)
 
     $('[data-toggle="tab"]').click( function(e) {
         switch( $(this).data('value') ){
@@ -983,15 +987,20 @@ Fecha : 12-Agosto-2025 @author Efrain Martinez Muñoz <programador.analista38@ci
                 "width": "20%",
                 "data": function( data ){
 
+
                     opciones = '<div class="btn-group-vertical" role="group">';
                     /**
                      * FECHA : 12-Agosto-2025 @author Efrain Martinez <programador.analista38@ciudadmaderas.com>
                      * Se agrega el boton para cancelar la solicitud desde este panel y se oculta el de rechazar solicitud.
                      */
+                     /**  FECHA : 19-Agosto-2025 | @author Mahonri Javier programador.analista63@ciudadmaderas.com | Validacion de usuario y rol. unicos usuarios autorizados a cancelar */
                     opciones += '<button type="button" class="notification btn btn-primary btn-sm consultar_modal" style="" value="'+data.idsolicitud+'" data-value="SOL" title="Ver Solicitud"><i class="far fa-eye"></i>'+(data.visto == 0 ? '</i><span class="badge">!</span>' : '')+'</button>';
                     opciones += '<button type="button" class="btn btn-success btn-sm aceptar_pago" data-value="PROV" title="Aceptar Solicitud"><i class="fas fa-check"></i></button>';
-                     opciones += '<button type="button" class="btn btn-danger cancelar_pago btn-sm" data-value="PROV" title="Cancelar solicitud"><i class="fas fa-ban"></i></button>';
-                    //opciones += '<button type="button" class="btn btn-danger rechazar_pago btn-sm" data-value="PROV" title="Rechazar Solicitud"><i class="fas fa-close"></i></button>';
+                    if((idUsuario=== 309 && rol === "CP") || (idUsuario=== 257 && rol === "SU")){
+                        opciones += '<button type="button" class="btn btn-danger cancelar_pago btn-sm" data-value="PROV" title="Cancelar solicitud"><i class="fas fa-ban"></i></button>';// se requiere validacion para mostrarse unicamente a   console.log(idUsuario, "rol: ",rol) para CP y SU 
+                    }
+                    
+                    opciones += '<button type="button" class="btn btn-warning rechazar_pago btn-sm" data-value="PROV" title="Rechazar Solicitud"><i class="fas fa-close"></i></button>';  //boton de rechazo de solicitud
                     opciones += '<button type="button" style="margin-bottom: 5px;"class="btn bg-purple btn-sm btn-masopciones" value="'+data.idsolicitud+'" data-table="1" title="Más opciones"><i class="fa fa-plus-circle"></i></button>';
                     
                     return opciones + '</div>';
@@ -2774,13 +2783,17 @@ Fecha : 12-Agosto-2025 @author Efrain Martinez Muñoz <programador.analista38@ci
      * FECHA : 12-Agosto-2025 @author Efrain Martinez <programador.analista38@ciudadmaderas.com>
      * Se crean la funciones onclick de los botones que cancelan las solicitudes dependiendo del tipo de solicitud que se va a cancelar.
      */
+
+    /** FECHA : 19-Agosto-2025 | @author Mahonri Javier programador.analista63@ciudadmaderas.com | Validacion de usuario y rol. unicos usuarios autorizados a cancelar */
     $( document ).on("click", ".cancelar_pago", function(){
+        if((idUsuario=== 309 && rol === "CP") || (idUsuario=== 257 && rol === "SU")){
         if( $(this).attr( "data-value" ) == 'PROV' || $(this).attr( "data-value" ) == 'PROG' || $(this).attr( "data-value" ) == 'DEV' ){
             trsolicitudes = $(this).closest('tr');    
         } 
         indexcajas_chicas = $(this).attr( "data-value" );
         $("#observacionC").val('');
         $("#myModalcomentarioCancelar").modal();
+    }
     });
     
     $( document ).on("click", ".CancelarpagoReembolsos", function(){
