@@ -1963,6 +1963,10 @@ Fecha : 12-Agosto-2025 @author Efrain Martinez Muñoz <programador.analista38@ci
      * FECHA : 12-Agosto-2025 @author Efrain Martinez <programador.analista38@ciudadmaderas.com>
      * Se agrega el boton para cancelar la solicitud desde este panel y se oculta el de rechazar solicitud.
      */
+     /**
+     * FECHA : 19-Agosto-2025 @author Mahonri Javier <programador.analista63@ciudadmaderas.com>
+     *  Se retira comentario de boton de rechazar solicitud para mostrarlo junto a cancelar solicitud en todos los usuarios y ocultar cancelar, solo habilitado en 2 usuarios.
+     */
     function detalles_viaticos(data) { 
         var solicitudes = '<div style="width: 100%; padding-top: 10px; padding-bottom: 10px; border-left: 1px solid #D2D6DE; border-right: 1px solid #D2D6DE; border-bottom: 1px solid #D2D6DE; border-radius: 0 0 5px 5px;">';
         $.each(data, function(i, v) {
@@ -2002,13 +2006,13 @@ Fecha : 12-Agosto-2025 @author Efrain Martinez Muñoz <programador.analista38@ci
                                         </button>
                                         <button type="button" class="btn btn-success btn-sm aceptar_pagoViatico mb-1" data-value="${i}" title="Aceptar Solicitud">
                                             <i class="fas fa-check"></i>
-                                        </button>
-                                        <!-- <button type="button" class="btn btn-danger btn-sm rechazar_pagoViatico mb-1" data-value="${i}" title="Rechazar Solicitud">
+                                        </button>                                        
+                                        <button type="button" class="btn btn-warning btn-sm rechazar_pagoViatico mb-1" data-value="${i}" title="Rechazar Solicitud">
                                             <i class="fas fa-times"></i> 
-                                        </button> -->
-                                        <button type="button" class="btn btn-danger btn-sm cancelarpagoViatico mb-1" data-value="${i}" title="Cancelar Solicitud">
+                                        </button> 
+                                        ${validacion&& `<button type="button" class="btn btn-danger btn-sm cancelarpagoViatico d-none mb-1" data-value="${i}" title="Cancelar Solicitud">
                                             <i class="fas fa-ban"></i> 
-                                        </button>
+                                        </button> `}
                                         <button type="button" class="btn bg-purple btn-sm btn-masopciones-viaticos" value="${v.idsolicitud}" data-table="2" data-fac="${v.idfactura}" data-solr="${v.idsolicitudr}" title="Más opciones">
                                             <i class="fa fa-plus-circle"></i>
                                         </button>
@@ -2026,9 +2030,23 @@ Fecha : 12-Agosto-2025 @author Efrain Martinez Muñoz <programador.analista38@ci
      * FECHA : 12-Agosto-2025 @author Efrain Martinez <programador.analista38@ciudadmaderas.com>
      * Se agrega el boton para cancelar la solicitud desde este panel y se oculta el de rechazar solicitud.
      */
+    /**
+     * FECHA : 19-Agosto-2025 @author Mahonri Javier <programador.analista63@ciudadmaderas.com>
+     *  Se retira comentario de boton de rechazar solicitud para mostrarlo junto a cancelar solicitud en todos los usuarios y ocultar cancelar, solo habilitado en 2 usuarios.
+     */
+    let validacion = "";
+            if((idUsuario=== 309 && rol === "CP") || (idUsuario=== 257 && rol === "SU")){
+                validacion = true
+                
+            }
+
     function detalles_caja_chica(data) { 
         var solicitudes = '<div style="width: 100%; padding-top: 10px; padding-bottom: 10px; border-left: 1px solid #D2D6DE; border-right: 1px solid #D2D6DE; border-bottom: 1px solid #D2D6DE; border-radius: 0 0 5px 5px;">';
         $.each(data, function(i, v) {
+            
+
+
+
             solicitudes += `
                 <div class="row col-xs-11 col-md-11">
                     <table class="table" style="background-color: transparent !important;">
@@ -2065,12 +2083,13 @@ Fecha : 12-Agosto-2025 @author Efrain Martinez Muñoz <programador.analista38@ci
                             <button type="button" class="btn btn-success btn-sm aceptar_pago mb-1" data-value="${i}" title="Aceptar Solicitud">
                                 <i class="fas fa-check"></i>
                             </button>
-                            <!-- <button type="button" class="btn btn-danger btn-sm rechazar_pago mb-1" data-value="${i}" title="Rechazar Solicitud">
+                            <button type="button" class="btn btn-warning btn-sm rechazar_pago mb-1" data-value="${i}" title="Rechazar Solicitud">
                                 <i class="fas fa-times"></i>
-                            </button> -->
-                             <button type="button" class="btn btn-danger btn-sm cancelar_pago mb-1" data-value="${i}" title="Cancelar Solicitud">
-                                <i class="fas fa-ban"></i>
-                            </button>
+                            </button> 
+                            ${validacion && `<button type="button" class="btn btn-danger btn-sm cancelar_pago mb-1" data-value="${i}" title="Cancelar Solicitud">
+                                                    <i class="fas fa-ban"></i>
+                                            </button>`}
+                            
                             <button type="button" class="btn bg-purple btn-sm btn-masopciones" value="${v.idsolicitud}" data-table="2" data-fac="${v.idfactura}" data-solr="${v.idsolicitudr}" title="Más opciones">
                                 <i class="fa fa-plus-circle"></i>
                             </button>
@@ -2086,6 +2105,10 @@ Fecha : 12-Agosto-2025 @author Efrain Martinez Muñoz <programador.analista38@ci
     /**
      * FECHA : 12-Agosto-2025 @author Efrain Martinez <programador.analista38@ciudadmaderas.com>
      * Se agrega el boton para cancelar la solicitud desde este panel y se oculta el de rechazar solicitud.
+     */
+     /**
+     * FECHA : 19-Agosto-2025 @author Mahonri Javier <programador.analista63@ciudadmaderas.com>
+     *  Se retira comentario de boton de rechazar solicitud para mostrarlo junto a cancelar solicitud en todos los usuarios y ocultar cancelar, solo habilitado en 2 usuarios.
      */
     function detalles_reembolsos(data) {
         var solicitudes = '<div style="width: 100%; padding-top: 10px; padding-bottom: 10px; border-left: 1px solid #D2D6DE; border-right: 1px solid #D2D6DE; border-bottom: 1px solid #D2D6DE; border-radius: 0 0 5px 5px;">';
@@ -2117,12 +2140,12 @@ Fecha : 12-Agosto-2025 @author Efrain Martinez Muñoz <programador.analista38@ci
                             <button type="button" class="btn btn-success btn-sm aceptar_pagoReembolsos mb-1" data-value="${i}" title="Aceptar Solicitud">
                                 <i class="fas fa-check"></i>
                             </button>
-                            <!-- <button type="button" class="btn btn-danger btn-sm rechazar_pagoReembolsos mb-1" data-value="${i}" title="Rechazar Solicitud">
+                            <button type="button" class="btn btn-warning btn-sm rechazar_pagoReembolsos mb-1" data-value="${i}" title="Rechazar Solicitud">
                                 <i class="fas fa-times"></i>
-                            </button> -->
-                            <button type="button" class="btn btn-danger btn-sm CancelarpagoReembolsos mb-1" data-value="${i}" title="Cancelar Solicitud">
+                            </button> 
+                            ${ validacion &&` <button type="button" class="btn btn-danger btn-sm CancelarpagoReembolsos mb-1" data-value="${i}" title="Cancelar Solicitud">
                                 <i class="fas fa-ban"></i>
-                            </button>
+                            </button>`}
                             <button type="button" class="btn bg-purple btn-sm btn-masopciones-reembolsos" value="${v.idsolicitud}" data-table="2" data-fac="${v.idfactura}" data-solr="${v.idsolicitudr}" title="Más opciones">
                                 <i class="fa fa-plus-circle"></i>
                             </button>
@@ -2138,6 +2161,10 @@ Fecha : 12-Agosto-2025 @author Efrain Martinez Muñoz <programador.analista38@ci
     /**
      * FECHA : 12-Agosto-2025 @author Efrain Martinez <programador.analista38@ciudadmaderas.com>
      * Se agrega el boton para cancelar la solicitud desde este panel y se oculta el de rechazar solicitud.
+     */
+     /**
+     * FECHA : 19-Agosto-2025 @author Mahonri Javier <programador.analista63@ciudadmaderas.com>
+     *  Se retira comentario de boton de rechazar solicitud para mostrarlo junto a cancelar solicitud en todos los usuarios y ocultar cancelar, solo habilitado en 2 usuarios.
      */
     function detalles_caja_chica_noDeducible(data) {
         var solicitudes = '<div style="width: 100%; padding-top: 10px; padding-bottom: 10px; border-left: 1px solid #D2D6DE; border-right: 1px solid #D2D6DE; border-bottom: 1px solid #D2D6DE; border-radius: 0 0 5px 5px;">';
@@ -2169,12 +2196,12 @@ Fecha : 12-Agosto-2025 @author Efrain Martinez Muñoz <programador.analista38@ci
                             <button type="button" class="btn btn-success btn-sm aceptar_chNodeducible mb-1" data-value="${i}" title="Aceptar Solicitud">
                                 <i class="fas fa-check"></i>
                             </button>
-                            <!-- <button type="button" class="btn btn-danger btn-sm rechazar_chNodeducible mb-1" data-value="${i}" title="Rechazar Solicitud">
+                            <button type="button" class="btn btn-warning btn-sm rechazar_chNodeducible mb-1" data-value="${i}" title="Rechazar Solicitud">
                                 <i class="fas fa-times"></i>
-                            </button> -->
-                            <button type="button" class="btn btn-danger btn-sm cancelarchNodeducible mb-1" data-value="${i}" title="Cancelar Solicitud">
-                                <i class="fas fa-ban"></i>
                             </button>
+                            ${validacion&& ` <button type="button" class="btn btn-danger btn-sm cancelarchNodeducible mb-1" data-value="${i}" title="Cancelar Solicitud">
+                                <i class="fas fa-ban"></i>
+                            </button>`}
                             <button type="button" class="btn bg-purple btn-sm btn-masopciones-noDeducibles" value="${v.idsolicitud}" data-table="2" data-fac="${v.idfactura}" data-solr="${v.idsolicitudr}" title="Más opciones">
                                 <i class="fa fa-plus-circle"></i>
                             </button>
@@ -2797,30 +2824,36 @@ Fecha : 12-Agosto-2025 @author Efrain Martinez Muñoz <programador.analista38@ci
     });
     
     $( document ).on("click", ".CancelarpagoReembolsos", function(){
+        if(validacion){
 		if( $(this).attr( "data-value" ) == 'PROV' || $(this).attr( "data-value" ) == 'PROG' || $(this).attr( "data-value" ) == 'DEV'){
 			trsolicitudes = $(this).closest('tr');
 		}
 		indexreembolsos = $(this).attr( "data-value" );
 		$("#observacionReemC").val('');
 		$("#modalReembolsoCancelar").modal();
+    }
 	});
 
     $( document ).on("click", ".cancelarpagoViatico", function(){
+        if(validacion){
 		if( $(this).attr( "data-value" ) == 'PROV' || $(this).attr( "data-value" ) == 'PROG' ){
 			trsolicitudesviaticos = $(this).closest('tr');
 		}
 		indexViaticos = $(this).attr( "data-value" );
 		$("#observacionViaticoC").val('');
 		$("#modalViaticosCancelar").modal();
+    }
 	});
 
     $( document ).on("click", ".cancelarchNodeducible", function(){
+        if(validacion){
 		if( $(this).attr( "data-value" ) == 'PROV' || $(this).attr( "data-value" ) == 'PROG' ){
 			trsolicitudes = $(this).closest('tr');
 		}
 		indexcajas_chicasNODDLS = $(this).attr( "data-value" );
 		$("#observacionNoDeducibleC").val('');
 		$("#modalNodeducibleCancelar").modal();
+    }
 	});
     /**
      * INICIO
@@ -3766,17 +3799,21 @@ Fecha : 12-Agosto-2025 @author Efrain Martinez Muñoz <programador.analista38@ci
                     }
                 },
                 {
+                    /**
+                     * FECHA : 12-Agosto-2025 @author Efrain Martinez <programador.analista38@ciudadmaderas.com>
+                     * Se agrega el boton para cancelar la solicitud desde este panel y se oculta el de rechazar solicitud.
+                     */
+                     /**
+                     * FECHA : 19-Agosto-2025 @author Mahonri Javier <programador.analista63@ciudadmaderas.com>
+                     *  Se retira comentario de boton de rechazar solicitud para mostrarlo junto a cancelar solicitud en todos los usuarios y ocultar cancelar, solo habilitado en 2 usuarios.
+                     */
                     "data": function( data ){
                         opciones = '<div class="btn-group-vertical" role="group">';
-                        /**
-                         * FECHA : 12-Agosto-2025 @author Efrain Martinez <programador.analista38@ciudadmaderas.com>
-                         * Se agrega el boton para cancelar la solicitud desde este panel y se oculta el de rechazar solicitud.
-                         */
                         opciones += '<button type="button" class="notification btn btn-primary btn-sm consultar_modal" style="" value="'+data.idsolicitud+'" data-value="SOL" title="Ver Solicitud"><i class="far fa-eye"></i>'+(data.visto == 0 ? '</i><span class="badge">!</span>' : '')+'</button>';
-                        opciones += '<button type="button" class="btn btn-success btn-sm aceptar_pago" data-value="PROG" title="Aceptar Solicitud"><i class="fas fa-check"></i></button>';
                         opciones += '<button type="button" class="btn btn-warning btn-sm modifica_pago" data-value="PROG" value="'+data.idsolicitud+'" data-cantidad="'+data.cantidad+'" data-fecreg="'+data.fecreg+'" data-fecha_fin="'+data.fecha_fin+'" data-programado="'+data.programado+'" title="Modificar cantidad de pago"><i class="fas fa-pencil-alt"></i></button>';
-                        // opciones += '<button type="button" class="btn btn-danger rechazar_pago btn-sm" data-value="PROG" title="Rechazar Solicitud"><i class="fas fa-close"></i></button>';
-                        opciones += '<button type="button" class="btn btn-danger cancelar_pago btn-sm" data-value="PROG" title="Cancelar Solicitud"><i class="fas fa-ban"></i></button>';
+                        opciones += '<button type="button" class="btn btn-success btn-sm aceptar_pago" data-value="PROG" title="Aceptar Solicitud"><i class="fas fa-check"></i></button>';
+                        opciones += '<button type="button" class="btn btn-warning rechazar_pago btn-sm" data-value="PROG" title="Rechazar Solicitud"><i class="fas fa-close"></i></button>';
+                        if(validacion){opciones += '<button type="button" class="btn btn-danger cancelar_pago btn-sm" data-value="PROG" title="Cancelar Solicitud"><i class="fas fa-ban"></i></button>';}
 
                         return opciones + '</div>';
                     } 
