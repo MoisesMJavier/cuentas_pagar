@@ -332,6 +332,8 @@ class ArchivoBanco extends CI_Controller {
     }  
     //GENERAR DOCUMENTOS TXT PARA CARGA DE ARCHIVOS AL BANCO
     //INFORMACION, CUENTA BANCARIA, EMPRESA
+    /**  FECHA : 21-Agosto-2025 | @author Mahonri Javier programador.analista63@ciudadmaderas.com | Se agrega idproceso al txt generado para movimiento bancario */
+
     function generar_txt_banco_TEA( $datos, $cuenta_bancaria, $empresa ){
 
         $consulta_noArchivo = $this->db->query("SELECT noArchivo FROM empresas where idempresa = ".$empresa);
@@ -364,6 +366,9 @@ class ArchivoBanco extends CI_Controller {
             }
 
             $new_cantidad =  number_format(str_replace(array(".", ","), array(",", "."), $new_valor),2, ".", "");
+            
+            // $ref_banc= strtoupper($row->ref_bancaria); 
+            // $idSol= ("SOLICITUD".$Row->idsolicitud)
 
             //AGREGAMOS LA REFERENCIA BANCARIA EN CASO QUE NO CUENTE LA SOLICITUD O TENGA CARACTERISTERES ESPECIALES SE AGREGAR EL FOLIO DE LAFACTURA
             if( $row->ref_bancaria == null || preg_replace('([^A-Za-z0-9])', '', $row->ref_bancaria ) == "" ){
@@ -375,7 +380,23 @@ class ArchivoBanco extends CI_Controller {
             
             $spi = $row->clvbanco == "40030" ? "BCO" : "SPI";
             $totpagar_ch = $totpagar_ch + $new_cantidad;
-            $mensaje .= "02".str_pad($i, 7, "0",STR_PAD_LEFT).$ctatip.$ctaemi."01".$row->clvbanco.str_pad(str_replace(".","",($new_cantidad*100)),15,"0",STR_PAD_LEFT).date("Ymd").$spi.str_pad($row->tipocta,2,"0",STR_PAD_LEFT).str_pad($row->cuenta,20,"0",STR_PAD_LEFT)."000000000".str_pad($row->alias,15," ",STR_PAD_RIGHT)."000000000000000".str_pad( $new_descripcion, 40, " ",STR_PAD_RIGHT).chr(13).chr(10);
+
+            // RETIRAR PARA CONSIDERAR LA LONGITUD DE LA REFERENCIA BANCARIA Y EL IDPROCESO PARA DEJAR ESPACIOS EN BLANCO
+            // $maxLongitud= 40 - (strlen($row->idsolicitud)+2);
+
+            if(strtoupper($row->ref_bancaria) === "SOLICITUD".$row->idsolicitud ){
+                $mensaje .= "02".str_pad($i, 7, "0",STR_PAD_LEFT).$ctatip.$ctaemi."01".$row->clvbanco.str_pad(str_replace(".","",($new_cantidad*100)),15,"0",STR_PAD_LEFT).date("Ymd").$spi.str_pad($row->tipocta,2,"0",STR_PAD_LEFT).str_pad($row->cuenta,20,"0",STR_PAD_LEFT)."000000000".str_pad($row->alias,15," ",STR_PAD_RIGHT)."000000000000000".str_pad( $new_descripcion, 40, " ",STR_PAD_RIGHT).chr(13).chr(10);
+            }else{
+                // RETIRAR PARA CONSIDERAR LA LONGITUD DE LA REFERENCIA BANCARIA Y EL IDPROCESO PARA DEJAR ESPACIOS EN BLANCO
+                // if( strlen($new_descripcion) <= $maxLongitud){
+                //     $mensaje .= "02".str_pad($i, 7, "0",STR_PAD_LEFT).$ctatip.$ctaemi."01".$row->clvbanco.str_pad(str_replace(".","",($new_cantidad*100)),15,"0",STR_PAD_LEFT).date("Ymd").$spi.str_pad($row->tipocta,2,"0",STR_PAD_LEFT).str_pad($row->cuenta,20,"0",STR_PAD_LEFT)."000000000".str_pad($row->alias,15," ",STR_PAD_RIGHT)."000000000000000".str_pad( ($new_descripcion." #".$row->idsolicitud), 40, " ",STR_PAD_RIGHT).chr(13).chr(10);
+                // }
+                if( strlen($new_descripcion) <= 40){
+                    $mensaje .= "02".str_pad($i, 7, "0",STR_PAD_LEFT).$ctatip.$ctaemi."01".$row->clvbanco.str_pad(str_replace(".","",($new_cantidad*100)),15,"0",STR_PAD_LEFT).date("Ymd").$spi.str_pad($row->tipocta,2,"0",STR_PAD_LEFT).str_pad($row->cuenta,20,"0",STR_PAD_LEFT)."000000000".str_pad($row->alias,15," ",STR_PAD_RIGHT)."000000000000000".str_pad( ($new_descripcion." #".$row->idsolicitud), 40, " ",STR_PAD_RIGHT).chr(13).chr(10);
+                }else{
+                    $mensaje .= "02".str_pad($i, 7, "0",STR_PAD_LEFT).$ctatip.$ctaemi."01".$row->clvbanco.str_pad(str_replace(".","",($new_cantidad*100)),15,"0",STR_PAD_LEFT).date("Ymd").$spi.str_pad($row->tipocta,2,"0",STR_PAD_LEFT).str_pad($row->cuenta,20,"0",STR_PAD_LEFT)."000000000".str_pad($row->alias,15," ",STR_PAD_RIGHT)."000000000000000".str_pad( $new_descripcion, 40, " ",STR_PAD_RIGHT)." #".str_pad( $row->idsolicitud, 8, " ",STR_PAD_RIGHT).chr(13).chr(10);
+                }
+            }
 
             $i++;
             $lineas=$i;
