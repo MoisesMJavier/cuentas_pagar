@@ -527,11 +527,11 @@
         
         var autorizadoVistaCompleta = false;   
 
-        var usuariosAutenticados = [
+        var listaUsuariosAutorizados = [
             {  "usuario": 2876,  "rol": "CA" },            
         ]
         
-        if(usuariosAutenticados.some(u => u.usuario ===idUsuario && u.rol === rol)){
+        if(listaUsuariosAutorizados.some(u => u.usuario ===idUsuario && u.rol === rol)){
             autorizadoVistaCompleta = true;
         }
 
