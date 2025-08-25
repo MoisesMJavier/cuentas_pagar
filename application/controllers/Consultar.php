@@ -234,6 +234,8 @@ class Consultar extends CI_Controller
         );
     } /** FIN FECHA: 27-FEBRERO-2025 | @author Angel Victoriano <programador.analista30@ciudadmaderas.com> **/
 
+                
+
     function solicitud($id, $tipo_consulta)
     {
 
@@ -251,9 +253,12 @@ class Consultar extends CI_Controller
                 $datos['datos_solicitud_array']=$this->Consulta->factura_solicitud( $id );
 
             } else if ($tipo_consulta == "DEV" || $tipo_consulta == "DEV_BASICA" || $tipo_consulta == "POST_DEV" ) {
+
+                
                 $datos['datos_solicitud'] = $this->M_Devolucion_Traspaso->getSolicitudadm($id)->row();
                 $datos['datos_adicionales'] = $this->Consulta->devolucion_solicitud( $id );
                 $datos['tipo_consulta']=$tipo_consulta;
+               
             }else{
                 $resultado = $this->Consulta->factura_solicitud( $id );
                 $datos['datos_solicitud_array']= $resultado;
@@ -315,7 +320,9 @@ class Consultar extends CI_Controller
                     ? $datos_historial_doc[0]['expediente']
                     : FALSE;
             }
-            
+                // Inicio
+                // @Author Moises Mahonri Javier Lopez programador.analista63@ciudadmaderas.com 22-08-2025
+                // Se agrega regimen fiscal y codigo postal de proveedor para usuario de Anet salinas Caballero en vista BAS. Se agrega como variable para escalabilidad de funciones
             switch( $tipo_consulta ){
                 case 'SOL':
                 case 'FAC':
@@ -324,7 +331,9 @@ class Consultar extends CI_Controller
                     ? null
                     : $this->load->view( "consultar_solicitud", $datos );
                     break;
-                case 'BAS':
+                case 'BAS':              
+                    $autorizadoVistaCompleta = in_array($this->session->userdata("inicio_sesion")['id']."-".$this->session->userdata("inicio_sesion")['rol'], array( "2876-CA" ));                     
+                    $datos['autorizadoVistaCompleta'] = $autorizadoVistaCompleta; 
                 	$this->load->view( "consulta_basica", $datos );
                     break;
                 case 'POST_DEV':    
