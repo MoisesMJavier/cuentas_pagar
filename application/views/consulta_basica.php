@@ -50,14 +50,15 @@
                     <div class="col-lg-6">
                         <h4>EMISOR</h4>
                         <h5 id="rfcemi_fac">RFC: <b><?= $datos_solicitud->rfc ?></b></h5>
-                        <h5 id="nombreemi_fac">NOMBRE <b><?= $datos_solicitud->nombre ?></b></h5>
-                <!-- 
-                * Inicio
-                * @Author Moises Mahonri Javier Lopez programador.analista63@ciudadmaderas.com 22-08-2025
-                * Se agrega regimen fiscal y codigo postal de proveedor para usuario de Anet salinas Caballero. Se agrega como variable para escalabilidad de funciones-->
-                        
-                        <h5 id="rf_empresa" style="display:none;">RÉGIMEN FISCAL <b><?= $datos_solicitud->rf_proveedor?></b></h5>
-                        <h5 id="cp_empresa" style="display:none;">CÓDIGO POSTAL <b><?= $datos_solicitud->cp_proveedor ?></b></h5>     
+                        <h5 id="nombreemi_fac">NOMBRE: <b><?= $datos_solicitud->nombre ?></b></h5>
+                
+                        <?php if($autorizadoVistaCompleta ): ?>                            
+                            <!-- * Inicio
+                            * @Author Moises Mahonri Javier Lopez programador.analista63@ciudadmaderas.com 22-08-2025
+                            * Se agrega regimen fiscal y codigo postal de proveedor para usuario de Anet salinas Caballero. Se agrega como variable para escalabilidad de funciones -->
+                            <h5 id="rf_empresa" >RÉGIMEN FISCAL: <b><?= $datos_solicitud->rf_proveedor?></b></h5>
+                            <h5 id="cp_empresa" >CÓDIGO POSTAL: <b><?= $datos_solicitud->cp_proveedor ?></b></h5>  
+                        <?php endif; ?>   
                     </div>
                 </div>
                 <div class="row">
@@ -516,26 +517,6 @@
                 echo json_encode($pdf_gastos_caja_chica);
                 ?>
         );
-
-        /**     Inicio
-                @Author Moises Mahonri Javier Lopez programador.analista63@ciudadmaderas.com 22-08-2025
-                Se agrega regimen fiscal y codigo postal de proveedor para usuario de Anet salinas Caballero. Se agrega como variable para escalabilidad de funciones **/
-
-        var idUsuario = <?= $this->session->userdata("inicio_sesion")['id'] ?>; 
-        var rol = `<?= $this->session->userdata("inicio_sesion")['rol'] ?>`;
-
-        
-        var autorizadoVistaCompleta = false;   
-
-        var listaUsuariosAutorizados = [
-            {  "usuario": 2876,  "rol": "CA" },            
-        ]
-        
-        if(listaUsuariosAutorizados.some(u => u.usuario ===idUsuario && u.rol === rol)){
-            autorizadoVistaCompleta = true;
-        }
-
-        // FIN 22-08-2025
 
         $('#consultar_modal').one('show.bs.modal', function(){
             documentos_pdf($('#idsolicitud').val());
@@ -1245,16 +1226,5 @@
             }
             return form;
         }
-
-                // Inicio
-                // @Author Moises Mahonri Javier Lopez programador.analista63@ciudadmaderas.com 22-08-2025
-                // Se agrega regimen fiscal y codigo postal de proveedor para usuario de Anet salinas Caballero. Se agrega como variable para escalabilidad de funciones
-
-        if (autorizadoVistaCompleta) {
-            document.getElementById("rf_empresa").style.display = "block";
-            document.getElementById("cp_empresa").style.display = "block";
-        }
-
-                // FIN 22-08-2025
 
     </script>
