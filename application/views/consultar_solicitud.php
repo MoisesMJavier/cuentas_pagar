@@ -34,6 +34,7 @@
                 <li><a data-toggle="tab" href="#historial">HISTORIAL</a></li>
                 <li><a href="https://verificacfdi.facturaelectronica.sat.gob.mx/" target="_blank">SAT</a></li>
                 <li><a data-toggle="tab" href="#docs" id="tabDocs">DOCUMENTOS</a></li>
+                <li><a data-toggle="tab" href="#cancelar" id="tabDocs">CANCELACION DE FACTURAS</a></li>
             </ul>
         </div>
         <div class="tab-content">
@@ -535,6 +536,89 @@
                     </div>
                 </div>
             </div>
+            <!-- INICIO FECHA: 28-AGOSTO-2025 | @author Mahonri Javier <programador.analista63@ciudadmaderas.com -->
+            <div id="cancelar" class="tab-pane fade">
+                <input type="hidden" id="idsolicitud" name="idsolicitud" value='<?php echo $idsolicitud; ?>'>
+                <div class="row">
+                    <div class="col-lg-12">
+                        <div class="form-group s_file">
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-lg-6">
+                        <h5><b>FACTURAS CARGADAS</b></h5>
+                    </div>
+                </div>
+                <div class="row">
+                <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12"> 
+                    <select id="sel_fact_<?= $idsolicitud ?>" class="form-control js-sel-factura-cancelacion" data-rows='<?= json_encode($datos_solicitud_array->result()) ?>'>
+                        <?php foreach ($datos_solicitud_array->result() as $i => $row): ?>
+                            <option value="<?= $i ?>">Factura: <?= $row->uuid ?></option>
+                        <?php endforeach; ?>
+                    </select>
+                </div>
+                </div>
+                <div class="row" style="margin-top: 15px;">
+                    <div class="col-lg-12" id="detalle">
+                        <button type="button" class="btn btn-sm btn-warning js-btn-cancelar">
+                            Borrar factura
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Bloque inline de confirmación (oculto por defecto) -->
+                <div class="panel panel-warning js-inline-confirm" style="display:none; margin-top:10px;">
+                <div class="panel-body">
+                    <p class="js-inline-label" style="margin-bottom:10px;"></p>
+
+                    <div class="form-group">
+                    <label>Nombre de quien solicita</label>
+                    <input type="text" class="form-control js-inline-solicitante" placeholder="Nombre completo">
+                    </div>
+
+                    <div class="form-group">
+                    <label>Número de ticket</label>
+                    <input type="text" class="form-control js-inline-ticket" placeholder="Ej. 116229">
+                    </div>
+
+                    <div class="alert alert-warning js-inline-err" style="display:none; margin-top:10px;">
+                    Completa solicitante y ticket.
+                    </div>
+
+                    <div class="text-right" style="margin-top:10px;">
+                    <button type="button" class="btn btn-default btn-sm js-inline-cancel">Cancelar</button>
+                    <button type="button" class="btn btn-danger btn-sm js-inline-send">Confirmar cancelación</button>
+                    </div>
+                </div>
+                 
+			</div>
+				</div>
+                <div class="row" id="gastoMayor" hidden>
+                    <div class="row" style="margin-left: 0px; margin-right: 0px;">
+                        <div class="col-lg-12">
+                            <h5><b>DOCUMENTOS CARGADOS PROVEEDOR - GASTO MAYOR A $5,000</b></h5>
+                        </div>
+                    </div>
+                    <div class="pdfArea_2">
+                        <div class="row" style="margin-left: 0px; margin-right: 0px;">
+                            <div class="col-lg-12" id="detalleProveedor"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row" id="pdfAutViaticos" hidden>
+                    <div class="row" style="margin-left: 0px; margin-right: 0px;">
+                        <div class="col-lg-12">
+                            <h5><b>PDF AUTORIZACIÓN REEMBOLSO</b></h5>
+                        </div>
+                    </div>
+                    <div class="pdfArea_3">
+                        <div class="row" style="margin-left: 0px; margin-right: 0px;">
+                            <div class="col-lg-12" id="detalleProveedor"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
     <!-- Modal Sustituir Documento Comer-->
@@ -626,6 +710,116 @@
                 $("#chatDep").scrollTop($("#chatDep")[0].scrollHeight);
             });
         } /** FIN FECHA: 27-FEBRERO-2025 | @author Angel Victoriano <programador.analista30@ciudadmaderas.com> **/
+
+        // INICIO FECHA: 28-AGOSTO-2025 | @author Mahonri Javier <programador.analista63@ciudadmaderas.com
+        document.addEventListener('click', function (e) {
+
+        var btn = e.target.closest('.js-btn-cancelar');
+        if (!btn) return;
+
+        // Usa el contenedor de la pestaña #cancelar (o modal)
+        var scope = btn.closest('#cancelar') || btn.closest('.modal') || document;
+
+        // Busca el select dentro de ese scope
+        var sel = scope.querySelector('#sel_fact_<?= $idsolicitud ?>') 
+                || scope.querySelector('.js-sel-factura-cancelacion');
+
+        var box = scope.querySelector('.js-inline-confirm');
+
+        if (sel && sel.selectedIndex < 0 && sel.options.length) sel.selectedIndex = 0;
+
+        // Carga filas desde data-rows si aún no están (sin PHP dentro del .js)
+        // CAMBIO: cacheamos las filas en sel._rows leyendo del atributo data-rows del <select>
+        if (sel && (!sel._rows || !sel._rows.length)) {
+            try { sel._rows = sel.dataset.rows ? JSON.parse(sel.dataset.rows) : []; }
+            catch (err) { sel._rows = []; }
+        }
+
+        if (!sel || sel.selectedIndex < 0) { alert('Selecciona una factura.'); return; }
+        if (!box) { alert('No se encontró el panel de confirmación.'); return; }
+
+        var idx  = parseInt(sel.value, 10);
+        var rows = sel._rows || [];
+        var row  = rows[idx];
+
+        if (!row || !row.idfactura) { alert('Factura inválida.'); return; }
+
+        var $box = $(box);
+        $box.data('row', row);
+        $box.data('sel', sel);
+
+        var etiqueta = row.uuid ? ('Factura ' + row.uuid) : ('Factura ID ' + row.idfactura);
+        $box.find('.js-inline-label').text(etiqueta);
+
+        $box.find('.js-inline-solicitante').val('');
+        $box.find('.js-inline-ticket').val('');
+        $box.find('.js-inline-err').hide();
+
+        $box.slideDown(150);
+        });
+
+        // Cancelar (ocultar el bloque inline)
+        $(document).on('click', '.js-inline-cancel', function () {
+        $(this).closest('.js-inline-confirm').slideUp(150);
+        });
+
+        // Confirmar y enviar al controller
+        $(document).on('click', '.js-inline-send', function () {
+        // CAMBIO: siempre toma el panel relativo a este botón
+        var $box = $(this).closest('.js-inline-confirm');     // ✅ $box SÍ existe en este scope
+        var sel  = $box.data('sel');
+
+        // Relee por si cambiaron la opción antes de confirmar
+        if (sel && sel.selectedIndex < 0 && sel.options.length) sel.selectedIndex = 0;
+
+        // CAMBIO: si por alguna razón no hay _rows, vuelvelas a cargar desde data-rows
+        if (sel && (!sel._rows || !sel._rows.length)) {
+            try { sel._rows = sel.dataset.rows ? JSON.parse(sel.dataset.rows) : []; }
+            catch (err) { sel._rows = []; }
+        }
+
+        var rows = sel && sel._rows ? sel._rows : [];
+        var idx  = sel ? parseInt(sel.value, 10) : -1;
+        var row  = (idx >= 0 ? rows[idx] : null) || $box.data('row') || {};
+
+        var solicitante = $.trim($box.find('.js-inline-solicitante').val());
+        var ticket      = $.trim($box.find('.js-inline-ticket').val());
+
+        if (!solicitante || !ticket) {
+            $box.find('.js-inline-err').show();
+            return;
+        }
+
+        var $btn = $(this), txt = $btn.text();
+        $btn.prop('disabled', true).text('Procesando...');
+
+        $.post(url + 'Consultar/cancelar_factura', {
+            idfactura:   row.idfactura,
+            idsolicitud: row.idsolicitud || '',
+            uuid:        row.uuid || '',
+            metodo_pago: row.metodo_pago || row.tipo_factura || '',
+            idlog:       row.idlog || '',
+            solicitante: solicitante,
+            ticket:      ticket
+        })
+        .done(function (res) {
+            try { if (typeof res === 'string') res = JSON.parse(res); } catch (e) {}
+            if (res && res.ok) {
+            if (sel && sel.selectedIndex >= 0) sel.remove(sel.selectedIndex);
+            // CAMBIO: aquí usabas `box` (inexistente en este scope); usa **$box**
+            $box.slideUp(150);                                    // ✅ FIX: usar $box, no box
+            alert(res.msg || 'Cancelación realizada.');
+            } else {
+            alert((res && res.msg) || 'No se pudo cancelar.');
+            }
+        })
+        .fail(function () {
+            alert('Error de red/servidor.');
+        })
+        .always(function () {
+            $btn.prop('disabled', false).text(txt);
+        });
+        });
 
         function cambiar_factura(pos){
             $("#met_pago_fac b").text(facturas[pos].metodo_pago);

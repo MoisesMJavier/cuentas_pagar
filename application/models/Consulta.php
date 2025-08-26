@@ -42,6 +42,7 @@ class Consulta extends CI_Model
             IFNULL(facturas.metpago, 'SIN FACTURA') AS metodo_pago, 
             IFNULL( facturas.foliofac, solpagos.folio ) AS folio,  
             IFNULL(facturas.fecfac, 'SIN DEFINIR') AS fecha_factura, 
+            facturas.idfactura, -- FECHA: 25-AGOSTO-2025 | @author Mahonri Javier <programador.analista63@ciudadmaderas.com>
             facturas.uuid, 
             facturas.descripcion, 
             facturas.observaciones,
@@ -1038,4 +1039,95 @@ class Consulta extends CI_Model
                                  FROM facturas 
                                  WHERE idfactura IN (SELECT idfactura FROM sol_factura WHERE idsolicitud = ?)", [$idsolicitud]));
     }
+
+    // INICIO FECHA: 28-AGOSTO-2025 | @author Mahonri Javier <programador.analista63@ciudadmaderas.com
+
+    /**
+     * Actualiza la factura al estado "cancelada" (ej. limpiar uuid, setear tipo a 0).
+     * Puedes pasar $campos extra para personalizar el UPDATE.
+     */
+    public function getFacturaById($idfactura)
+    {
+        return $this->db->select('idfactura, uuid, idsolicitud, metpago AS metodo_pago, tipo_factura')
+                        ->from('facturas')
+                        ->where('idfactura', $idfactura)
+                        ->limit(1)
+                        ->get()->row();
+    }
+    public function cancelarFacturaPpdPue(array $p)
+    {
+        $req = ['idfactura','idsolicitud','uuid','metodo','idusuario','nombreUsuario','solicitante','ticket'];
+        foreach ($req as $k) { if (!isset($p[$k]) || $p[$k]==='') return ['ok'=>false,'msg'=>"Falta $k"]; }
+
+        $idfactura     = $p['idfactura'];
+        $idsolicitud   = $p['idsolicitud'];
+        $uuid          = $p['uuid'];
+        $metodo        = strtoupper(trim((string)$p['metodo']));
+        $idlog         = $p['idlog'] ?? null;
+        $idusuario     = $p['idusuario'];
+        $nombreUsuario = $p['nombreUsuario'];
+        $solicitante   = trim((string)$p['solicitante']);
+        $ticket        = trim((string)$p['ticket']);
+
+        $this->db->trans_start();
+
+        $uuid_recortado = substr((string)$uuid, 0, -2);
+
+        $this->db->query(
+            "UPDATE cpp.facturas SET uuid = ?, tipo_factura = '0' WHERE idfactura = ?",
+            [$uuid_recortado, $idfactura]
+        );
+
+        if ($metodo === 'PPD') {
+            $this->db->query(
+                "UPDATE solpagos SET idetapa = '10' WHERE idsolicitud = ?",
+                [$idsolicitud]
+            );
+            $msg = 'SE ELIMINÓ COMPLEMENTO DE PAGO CON FOLIO FISCAL: "'.$uuid.
+                '" A SOLICITUD DEL USUARIO "'.$solicitante.'"'.
+                ($ticket !== '' ? ', MEDIANTE EL TICKET #'.$ticket.'.' : '.');
+
+            $this->db->query(
+                "INSERT INTO logs (idusuario, idsolicitud, tipomov, fecha) VALUES (?, ?, ?, NOW())",
+                [$idusuario, $idsolicitud, $msg]
+            );
+
+        } else {
+            $this->db->query(
+                "DELETE FROM sol_factura WHERE idsolicitud = ? AND idfactura = ?",
+                [$idsolicitud, $idfactura]
+            );
+            if (empty($idlog)) {
+                $row = $this->db->select('idlog')
+                                ->from('cpp.logs')
+                                ->where('idsolicitud', $idsolicitud)
+                                ->order_by('fecha', 'DESC')
+                                ->limit(1)->get()->row();
+                $idlog = $row->idlog ?? null;
+            }
+
+            $msg = 'SE ELIMINÓ LA FACTURA CON FOLIO FISCAL '.$uuid.
+                ', A PETICIÓN DEL USUARIO: "'.$solicitante.'"'.
+                ($ticket !== '' ? ' POR MEDIO DEL TICKET #'.$ticket.'.' : '.');
+
+            if ($idlog) {
+                $this->db->query(
+                    "UPDATE logs SET tipomov = ? WHERE idlog = ?",
+                    [$msg, $idlog]
+                );
+            } else {
+                $this->db->query(
+                    "INSERT INTO logs (idusuario, idsolicitud, tipomov, fecha) VALUES (?, ?, ?, NOW())",
+                    [$idusuario, $idsolicitud, $msg]
+                );
+            }
+        }
+
+        $this->db->trans_complete();
+        $ok = $this->db->trans_status();
+
+        return ['ok' => $ok, 'msg' => $ok ? 'Cancelación realizada' : 'No se pudo cancelar'];
+    }
+
+
 }

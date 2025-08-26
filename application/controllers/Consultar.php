@@ -1778,4 +1778,49 @@ class Consultar extends CI_Controller
         exit;
     } 
     /** FIN FECHA: 26-AGOSTO-2024 | @author Angel Victoriano <programador.analista30@ciudadmaderas.com> */
+    
+    // INICIO FECHA: 28-AGOSTO-2025 | @author Mahonri Javier <programador.analista63@ciudadmaderas.com
+    public function cancelar_factura()
+    {
+        $idfactura   = $this->input->post('idfactura', true);
+        $idsolicitud = $this->input->post('idsolicitud', true);
+        $uuid        = $this->input->post('uuid', true);
+        $metodo_cli  = strtoupper(trim((string)$this->input->post('metodo_pago', true)));
+        $idlog       = $this->input->post('idlog', true);
+        $ticket      = $this->input->post('ticket', true);
+        $solicitante = $this->input->post('solicitante', true);
+
+        if (!$idfactura) {
+            return $this->output->set_content_type('application/json')
+                ->set_output(json_encode(['ok' => false, 'msg' => 'Falta idfactura']));
+        }
+// Agregado para validacion de permisos
+        $usuario = $this->session->userdata('inicio_sesion') ?: [];
+        $idusuario = $usuario['id'] ?? null;
+        $nombreUsuario = $usuario['nombre'] ?? ($usuario['usuario'] ?? 'USUARIO');
+        $fact = $this->Consulta->getFacturaById($idfactura);
+        if (!$fact) {
+            return $this->output->set_content_type('application/json')
+                ->set_output(json_encode(['ok' => false, 'msg' => 'Factura no encontrada']));
+        }
+
+        // Normaliza campos faltantes
+        $idsolicitud = $idsolicitud ?: ($fact->idsolicitud ?? null);
+        $uuid        = $uuid ?: ($fact->uuid ?? '');
+        $metodo      = $metodo_cli ?: strtoupper(trim((string)($fact->metodo_pago ?: $fact->tipo_factura)));
+        $res = $this->Consulta->cancelarFacturaPpdPue([
+            'idfactura'      => $idfactura,
+            'idsolicitud'    => $idsolicitud,
+            'uuid'           => $uuid,
+            'metodo'         => $metodo,       
+            'idlog'          => $idlog,        
+            'idusuario'      => $idusuario,
+            'nombreUsuario'  => $nombreUsuario,
+            'solicitante'    => $solicitante, 
+            'ticket'         => $ticket, 
+        ]);
+
+        return $this->output->set_content_type('application/json')
+                            ->set_output(json_encode($res));
+    }
 }
