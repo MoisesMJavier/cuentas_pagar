@@ -717,19 +717,14 @@
         var btn = e.target.closest('.js-btn-cancelar');
         if (!btn) return;
 
-        // Usa el contenedor de la pestaña #cancelar (o modal)
         var scope = btn.closest('#cancelar') || btn.closest('.modal') || document;
 
-        // Busca el select dentro de ese scope
         var sel = scope.querySelector('#sel_fact_<?= $idsolicitud ?>') 
                 || scope.querySelector('.js-sel-factura-cancelacion');
 
         var box = scope.querySelector('.js-inline-confirm');
 
         if (sel && sel.selectedIndex < 0 && sel.options.length) sel.selectedIndex = 0;
-
-        // Carga filas desde data-rows si aún no están (sin PHP dentro del .js)
-        // CAMBIO: cacheamos las filas en sel._rows leyendo del atributo data-rows del <select>
         if (sel && (!sel._rows || !sel._rows.length)) {
             try { sel._rows = sel.dataset.rows ? JSON.parse(sel.dataset.rows) : []; }
             catch (err) { sel._rows = []; }
@@ -758,21 +753,14 @@
         $box.slideDown(150);
         });
 
-        // Cancelar (ocultar el bloque inline)
         $(document).on('click', '.js-inline-cancel', function () {
         $(this).closest('.js-inline-confirm').slideUp(150);
         });
-
-        // Confirmar y enviar al controller
         $(document).on('click', '.js-inline-send', function () {
-        // CAMBIO: siempre toma el panel relativo a este botón
-        var $box = $(this).closest('.js-inline-confirm');     // ✅ $box SÍ existe en este scope
+        var $box = $(this).closest('.js-inline-confirm');
         var sel  = $box.data('sel');
-
-        // Relee por si cambiaron la opción antes de confirmar
         if (sel && sel.selectedIndex < 0 && sel.options.length) sel.selectedIndex = 0;
 
-        // CAMBIO: si por alguna razón no hay _rows, vuelvelas a cargar desde data-rows
         if (sel && (!sel._rows || !sel._rows.length)) {
             try { sel._rows = sel.dataset.rows ? JSON.parse(sel.dataset.rows) : []; }
             catch (err) { sel._rows = []; }
@@ -803,12 +791,12 @@
             ticket:      ticket
         })
         .done(function (res) {
-            try { if (typeof res === 'string') res = JSON.parse(res); } catch (e) {}
             if (res && res.ok) {
             if (sel && sel.selectedIndex >= 0) sel.remove(sel.selectedIndex);
-            // CAMBIO: aquí usabas `box` (inexistente en este scope); usa **$box**
-            $box.slideUp(150);                                    // ✅ FIX: usar $box, no box
-            alert(res.msg || 'Cancelación realizada.');
+            $box.slideUp(150);
+            alert(res.msg || 'Cancelación realizada.');            
+            $('#info').load(url + 'Consultar/solicitud/' + $('#idsolicitud').val() + '/SOL?html' + ' #info > *');
+            $('a[href="#info"][data-toggle="tab"]').first().tab('show');
             } else {
             alert((res && res.msg) || 'No se pudo cancelar.');
             }
