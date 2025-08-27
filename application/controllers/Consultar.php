@@ -1789,6 +1789,7 @@ class Consultar extends CI_Controller
         $idlog       = $this->input->post('idlog', true);
         $ticket      = $this->input->post('ticket', true);
         $solicitante = $this->input->post('solicitante', true);
+        $tipoFactura = $this->input->post('tipo_factura', true);
 
         if (!$idfactura) {
             return $this->output->set_content_type('application/json')
@@ -1812,6 +1813,7 @@ class Consultar extends CI_Controller
             'idfactura'      => $idfactura,
             'idsolicitud'    => $idsolicitud,
             'uuid'           => $uuid,
+            'tipo_factura'   => $tipoFactura,
             'metodo'         => $metodo,       
             'idlog'          => $idlog,        
             'idusuario'      => $idusuario,

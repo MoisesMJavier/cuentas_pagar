@@ -43,7 +43,8 @@ class Consulta extends CI_Model
             IFNULL( facturas.foliofac, solpagos.folio ) AS folio,  
             IFNULL(facturas.fecfac, 'SIN DEFINIR') AS fecha_factura, 
             facturas.idfactura, -- FECHA: 25-AGOSTO-2025 | @author Mahonri Javier <programador.analista63@ciudadmaderas.com>
-            facturas.uuid, 
+            facturas.uuid,
+            facturas.tipo_factura, -- FECHA: 25-AGOSTO-2025 | @author Mahonri Javier <programador.analista63@ciudadmaderas.com> 
             facturas.descripcion, 
             facturas.observaciones,
             facturas.regf_emisor AS rf_proveedor,
@@ -1056,12 +1057,13 @@ class Consulta extends CI_Model
     }
     public function cancelarFacturaPpdPue(array $p)
     {
-        $req = ['idfactura','idsolicitud','uuid','metodo','idusuario','nombreUsuario','solicitante','ticket'];
+        $req = ['idfactura','idsolicitud','uuid','tipo_factura','metodo','idusuario','nombreUsuario','solicitante','ticket'];
         foreach ($req as $k) { if (!isset($p[$k]) || $p[$k]==='') return ['ok'=>false,'msg'=>"Falta $k"]; }
 
         $idfactura     = $p['idfactura'];
         $idsolicitud   = $p['idsolicitud'];
         $uuid          = $p['uuid'];
+        $tipoFactura   = $p['tipo_factura'];
         $metodo        = strtoupper(trim((string)$p['metodo']));
         $idlog         = $p['idlog'] ?? null;
         $idusuario     = $p['idusuario'];
@@ -1079,7 +1081,8 @@ class Consulta extends CI_Model
         );
 
         if ($metodo === 'PPD') {
-            $this->db->query(
+            if($tipoFactura === 2) {
+                $this->db->query(
                 "UPDATE solpagos SET idetapa = '10' WHERE idsolicitud = ?",
                 [$idsolicitud]
             );
@@ -1091,6 +1094,22 @@ class Consulta extends CI_Model
                 "INSERT INTO logs (idusuario, idsolicitud, tipomov, fecha) VALUES (?, ?, ?, NOW())",
                 [$idusuario, $idsolicitud, $msg]
             );
+            }else{
+                $this->db->query(
+                "UPDATE solpagos SET idetapa = '10' WHERE idsolicitud = ?",
+                [$idsolicitud]
+            );
+            $msg = 'TIPO 1 SE ELIMINÓ COMPLEMENTO DE PAGO CON FOLIO FISCAL: "'.$uuid.
+                '" A SOLICITUD DEL USUARIO "'.$solicitante.'"'.
+                ($ticket !== '' ? ', MEDIANTE EL TICKET #'.$ticket.'.' : '.');
+
+            $this->db->query(
+                "INSERT INTO logs (idusuario, idsolicitud, tipomov, fecha) VALUES (?, ?, ?, NOW())",
+                [$idusuario, $idsolicitud, $msg]
+            );
+
+            }
+            
 
         } else {
             $this->db->query(

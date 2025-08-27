@@ -769,6 +769,7 @@
         var rows = sel && sel._rows ? sel._rows : [];
         var idx  = sel ? parseInt(sel.value, 10) : -1;
         var row  = (idx >= 0 ? rows[idx] : null) || $box.data('row') || {};
+        console.log(row);
 
         var solicitante = $.trim($box.find('.js-inline-solicitante').val());
         var ticket      = $.trim($box.find('.js-inline-ticket').val());
@@ -785,6 +786,7 @@
             idfactura:   row.idfactura,
             idsolicitud: row.idsolicitud || '',
             uuid:        row.uuid || '',
+            tipo_factura: row.tipo_factura || '',
             metodo_pago: row.metodo_pago || row.tipo_factura || '',
             idlog:       row.idlog || '',
             solicitante: solicitante,
