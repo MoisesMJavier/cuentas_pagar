@@ -742,7 +742,6 @@
         $(document).on('click', '.js-inline-send', function () {
         var $box = $(this).closest('.js-inline-confirm');
         var sel  = $box.data('sel');
-        
         if (!sel) return alert('No se encontró el select.');
 
         sel._rows = sel._rows;
@@ -765,9 +764,6 @@
                 if (sel.selectedIndex >= 0) sel.remove(sel.selectedIndex);
                 $box.slideUp(150); 
                 alert(res.msg || 'Cancelación realizada.'); 
-                  // CAMBIO: recargar el tab #info con los datos actuales de la solicitud
-                const idsol = ($('#cancelar #idsolicitud').val()) || $('#idsolicitud').val();
-                refreshInfoTab(idsol , true ); // pasa true si también quieres activar #info
 
             }
             else alert((res && res.msg) || 'No se pudo cancelar.');
@@ -775,18 +771,6 @@
         .fail(() => alert('Error de red/servidor.'))
         .always(() => $btn.prop('disabled', false).text('Confirmar cancelación'));
         });
-        // CAMBIO: helper para refrescar el contenido del tab #info
-        function refreshInfoTab(idsolicitud, activar = false) {
-          // Ajusta la URL a tu endpoint que devuelve el HTML del tab "info"
-          $.get(url + 'Consultar/info_tab', { idsolicitud: idsolicitud })
-            .done(function (html) {
-              $('#info').html(html);
-              if (activar) $('a[href="#info"]').tab('show'); // opcional: cambiar a la pestaña
-            })
-            .fail(function () {
-              console.warn('No se pudo recargar el tab #info');
-            });
-        }
 
         function cambiar_factura(pos){
             $("#met_pago_fac b").text(facturas[pos].metodo_pago);
