@@ -712,81 +712,114 @@
         } /** FIN FECHA: 27-FEBRERO-2025 | @author Angel Victoriano <programador.analista30@ciudadmaderas.com> **/
 
         // INICIO FECHA: 28-AGOSTO-2025 | @author Mahonri Javier <programador.analista63@ciudadmaderas.com
+        document.addEventListener('click', function (e) {
 
-        $('#cancelar').on('click', '.js-inline-cancel', function () {
-        $(this).closest('.js-inline-confirm').slideUp(150);
-        });
-
-        $('#cancelar').on('click', '.js-inline-send', function () {
-        var $box = $(this).closest('.js-inline-confirm');
-        var sel  = $box.data('sel');
-        if (!sel) return alert('No se encontró el select.');
-        });
-
-        document.addEventListener('click', e => {
         var btn = e.target.closest('.js-btn-cancelar');
         if (!btn) return;
 
-        var pane = btn.closest('#cancelar');
-        var sel  = pane.querySelector('#sel_fact_<?= $idsolicitud ?>');
-        var box  = pane.querySelector('.js-inline-confirm');
-        if (!sel || !box || !sel.options.length) return alert('Selecciona una factura.');
-        if (sel.selectedIndex < 0) sel.selectedIndex = 0;
+        // Usa el contenedor de la pestaña #cancelar (o modal)
+        var scope = btn.closest('#cancelar') || btn.closest('.modal') || document;
 
-        $(box).data('sel', sel).find('.js-inline-label').text('Factura seleccionada');
-        $(box).find('.js-inline-solicitante, .js-inline-ticket').val('');
-        $(box).find('.js-inline-err').hide();
-        $(box).slideDown(150);
+        // Busca el select dentro de ese scope
+        var sel = scope.querySelector('#sel_fact_<?= $idsolicitud ?>') 
+                || scope.querySelector('.js-sel-factura-cancelacion');
+
+        var box = scope.querySelector('.js-inline-confirm');
+
+        if (sel && sel.selectedIndex < 0 && sel.options.length) sel.selectedIndex = 0;
+
+        // Carga filas desde data-rows si aún no están (sin PHP dentro del .js)
+        // CAMBIO: cacheamos las filas en sel._rows leyendo del atributo data-rows del <select>
+        if (sel && (!sel._rows || !sel._rows.length)) {
+            try { sel._rows = sel.dataset.rows ? JSON.parse(sel.dataset.rows) : []; }
+            catch (err) { sel._rows = []; }
+        }
+
+        if (!sel || sel.selectedIndex < 0) { alert('Selecciona una factura.'); return; }
+        if (!box) { alert('No se encontró el panel de confirmación.'); return; }
+
+        var idx  = parseInt(sel.value, 10);
+        var rows = sel._rows || [];
+        var row  = rows[idx];
+
+        if (!row || !row.idfactura) { alert('Factura inválida.'); return; }
+
+        var $box = $(box);
+        $box.data('row', row);
+        $box.data('sel', sel);
+
+        var etiqueta = row.uuid ? ('Factura ' + row.uuid) : ('Factura ID ' + row.idfactura);
+        $box.find('.js-inline-label').text(etiqueta);
+
+        $box.find('.js-inline-solicitante').val('');
+        $box.find('.js-inline-ticket').val('');
+        $box.find('.js-inline-err').hide();
+
+        $box.slideDown(150);
         });
 
-        $(document).on('click', '.js-inline-send', function () {
-        var $box = $(this).closest('.js-inline-confirm');
-        var sel  = $box.data('sel');
-        
-        if (!sel) return alert('No se encontró el select.');
+        // Cancelar (ocultar el bloque inline)
+        $(document).on('click', '.js-inline-cancel', function () {
+        $(this).closest('.js-inline-confirm').slideUp(150);
+        });
 
-        sel._rows = sel._rows;
-        if (sel.selectedIndex < 0 && sel.options.length) sel.selectedIndex = 0;
-        var row = sel._rows[sel.selectedIndex];
+        // Confirmar y enviar al controller
+        $(document).on('click', '.js-inline-send', function () {
+        // CAMBIO: siempre toma el panel relativo a este botón
+        var $box = $(this).closest('.js-inline-confirm');     // ✅ $box SÍ existe en este scope
+        var sel  = $box.data('sel');
+
+        // Relee por si cambiaron la opción antes de confirmar
+        if (sel && sel.selectedIndex < 0 && sel.options.length) sel.selectedIndex = 0;
+
+        // CAMBIO: si por alguna razón no hay _rows, vuelvelas a cargar desde data-rows
+        if (sel && (!sel._rows || !sel._rows.length)) {
+            try { sel._rows = sel.dataset.rows ? JSON.parse(sel.dataset.rows) : []; }
+            catch (err) { sel._rows = []; }
+        }
+
+        var rows = sel && sel._rows ? sel._rows : [];
+        var idx  = sel ? parseInt(sel.value, 10) : -1;
+        var row  = (idx >= 0 ? rows[idx] : null) || $box.data('row') || {};
 
         var solicitante = $.trim($box.find('.js-inline-solicitante').val());
         var ticket      = $.trim($box.find('.js-inline-ticket').val());
-        if (!solicitante || !ticket) return $box.find('.js-inline-err').show();
 
-        var $btn = $(this).prop('disabled', true).text('Procesando...');
-        $.post(url + 'Consultar/cancelar_factura', {
-            idfactura: row.idfactura, idsolicitud: row.idsolicitud || '', uuid: row.uuid || '',
-            metodo_pago: row.metodo_pago || row.tipo_factura || '', idlog: row.idlog || '',
-            solicitante, ticket
-        })
-        .done(res => {
-            try { if (typeof res === 'string') res = JSON.parse(res); } catch {}
-            if (res && res.ok) { 
-                if (sel.selectedIndex >= 0) sel.remove(sel.selectedIndex);
-                $box.slideUp(150); 
-                alert(res.msg || 'Cancelación realizada.'); 
-                  // CAMBIO: recargar el tab #info con los datos actuales de la solicitud
-                const idsol = ($('#cancelar #idsolicitud').val()) || $('#idsolicitud').val();
-                refreshInfoTab(idsol , true ); // pasa true si también quieres activar #info
-
-            }
-            else alert((res && res.msg) || 'No se pudo cancelar.');
-        })
-        .fail(() => alert('Error de red/servidor.'))
-        .always(() => $btn.prop('disabled', false).text('Confirmar cancelación'));
-        });
-        // CAMBIO: helper para refrescar el contenido del tab #info
-        function refreshInfoTab(idsolicitud, activar = false) {
-          // Ajusta la URL a tu endpoint que devuelve el HTML del tab "info"
-          $.get(url + 'Consultar/info_tab', { idsolicitud: idsolicitud })
-            .done(function (html) {
-              $('#info').html(html);
-              if (activar) $('a[href="#info"]').tab('show'); // opcional: cambiar a la pestaña
-            })
-            .fail(function () {
-              console.warn('No se pudo recargar el tab #info');
-            });
+        if (!solicitante || !ticket) {
+            $box.find('.js-inline-err').show();
+            return;
         }
+
+        var $btn = $(this), txt = $btn.text();
+        $btn.prop('disabled', true).text('Procesando...');
+
+        $.post(url + 'Consultar/cancelar_factura', {
+            idfactura:   row.idfactura,
+            idsolicitud: row.idsolicitud || '',
+            uuid:        row.uuid || '',
+            metodo_pago: row.metodo_pago || row.tipo_factura || '',
+            idlog:       row.idlog || '',
+            solicitante: solicitante,
+            ticket:      ticket
+        })
+        .done(function (res) {
+            try { if (typeof res === 'string') res = JSON.parse(res); } catch (e) {}
+            if (res && res.ok) {
+            if (sel && sel.selectedIndex >= 0) sel.remove(sel.selectedIndex);
+            // CAMBIO: aquí usabas `box` (inexistente en este scope); usa **$box**
+            $box.slideUp(150);                                    // ✅ FIX: usar $box, no box
+            alert(res.msg || 'Cancelación realizada.');
+            } else {
+            alert((res && res.msg) || 'No se pudo cancelar.');
+            }
+        })
+        .fail(function () {
+            alert('Error de red/servidor.');
+        })
+        .always(function () {
+            $btn.prop('disabled', false).text(txt);
+        });
+        });
 
         function cambiar_factura(pos){
             $("#met_pago_fac b").text(facturas[pos].metodo_pago);
