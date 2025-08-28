@@ -779,8 +779,38 @@
             return;
         }
 
-        var $btn = $(this), txt = $btn.text();
+        
+       
+        var $btn = $(this); 
+        if (row.tipo_factura == 1) {
+               console.log('Es factura padre, llamando a obtenerHijos...');
+            $.get(url + 'Consultar/obtenerHijos/' + row.idsolicitud, function(res) {
+                console.log('Respuesta de obtenerHijos:', res);
+                if (res && res.ok && res.hijos && res.hijos.length) {
+                    var lista = res.hijos.map(f => '- ' + f.uuid).join('\n');
+                    var confirmMsg = 
+                        "⚠️ La factura seleccionada es una FACTURA PADRE.\n\n" +
+                        "Si confirmas, también se eliminarán sus facturas hijos:\n\n" +
+                        lista + "\n\n¿Deseas continuar?";
+                    if (!confirm(confirmMsg)) {
+                        return;
+                    }
+                   
+                    enviarCancelacion(row, solicitante, ticket, $box, sel, $btn, 1);
+                } else {
+                    alert("No se pudieron obtener las facturas hijas.");
+                }
+            });
+        } else {
+            console.log('No es factura padre, enviando directamente');
+            enviarCancelacion(row, solicitante, ticket, $box, sel, $btn, 0);
+        }
+    });
+
+    function enviarCancelacion(row, solicitante, ticket, $box, sel, $btn, confirmado) {
+        var txt = $btn.text();
         $btn.prop('disabled', true).text('Procesando...');
+        console.log("esto quiere decir confirmado: ", confirmado)
 
         $.post(url + 'Consultar/cancelar_factura', {
             idfactura:   row.idfactura,
@@ -790,17 +820,18 @@
             metodo_pago: row.metodo_pago || row.tipo_factura || '',
             idlog:       row.idlog || '',
             solicitante: solicitante,
-            ticket:      ticket
+            ticket:      ticket,
+            confirmado:   confirmado
         })
         .done(function (res) {
             if (res && res.ok) {
-            if (sel && sel.selectedIndex >= 0) sel.remove(sel.selectedIndex);
-            $box.slideUp(150);
-            alert(res.msg || 'Cancelación realizada.');            
-            $('#info').load(url + 'Consultar/solicitud/' + $('#idsolicitud').val() + '/SOL?html' + ' #info > *');
-            $('a[href="#info"][data-toggle="tab"]').first().tab('show');
+                if (sel && sel.selectedIndex >= 0) sel.remove(sel.selectedIndex);
+                $box.slideUp(150);
+                alert(res.msg || 'Cancelación realizada.');            
+                $('#info').load(url + 'Consultar/solicitud/' + $('#idsolicitud').val() + '/SOL?html' + ' #info > *');
+                $('a[href="#info"][data-toggle="tab"]').first().tab('show');
             } else {
-            alert((res && res.msg) || 'No se pudo cancelar.');
+                alert((res && res.msg) || 'No se pudo cancelar.');
             }
         })
         .fail(function () {
@@ -809,7 +840,9 @@
         .always(function () {
             $btn.prop('disabled', false).text(txt);
         });
-        });
+    }
+
+
 
         function cambiar_factura(pos){
             $("#met_pago_fac b").text(facturas[pos].metodo_pago);

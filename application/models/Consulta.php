@@ -43,6 +43,7 @@ class Consulta extends CI_Model
             IFNULL( facturas.foliofac, solpagos.folio ) AS folio,  
             IFNULL(facturas.fecfac, 'SIN DEFINIR') AS fecha_factura, 
             facturas.idfactura, -- FECHA: 25-AGOSTO-2025 | @author Mahonri Javier <programador.analista63@ciudadmaderas.com>
+            facturas.idsolicitud, -- FECHA: 25-AGOSTO-2025 | @author Mahonri Javier <programador.analista63@ciudadmaderas.com>
             facturas.uuid,
             facturas.tipo_factura, -- FECHA: 25-AGOSTO-2025 | @author Mahonri Javier <programador.analista63@ciudadmaderas.com> 
             facturas.descripcion, 
@@ -1057,19 +1058,15 @@ class Consulta extends CI_Model
     }
     public function cancelarFacturaPpdPue(array $p)
     {
-        $req = ['idfactura','idsolicitud','uuid','tipo_factura','metodo','idusuario','nombreUsuario','solicitante','ticket'];
-        foreach ($req as $k) { if (!isset($p[$k]) || $p[$k]==='') return ['ok'=>false,'msg'=>"Falta $k"]; }
 
         $idfactura     = $p['idfactura'];
         $idsolicitud   = $p['idsolicitud'];
         $uuid          = $p['uuid'];
         $tipoFactura   = $p['tipo_factura'];
         $metodo        = strtoupper(trim((string)$p['metodo']));
-        $idlog         = $p['idlog'] ?? null;
         $idusuario     = $p['idusuario'];
-        $nombreUsuario = $p['nombreUsuario'];
-        $solicitante   = trim((string)$p['solicitante']);
-        $ticket        = trim((string)$p['ticket']);
+        $solicitante   = $p['solicitante'];
+        $ticket        = $p['ticket'];
 
         $this->db->trans_start();
 
@@ -1080,38 +1077,8 @@ class Consulta extends CI_Model
             [$uuid_recortado, $idfactura]
         );
 
-        if ($metodo === 'PPD') {
-            if($tipoFactura === 2) {
-                $this->db->query(
-                "UPDATE solpagos SET idetapa = '10' WHERE idsolicitud = ?",
-                [$idsolicitud]
-            );
-            $msg = 'SE ELIMINÓ COMPLEMENTO DE PAGO CON FOLIO FISCAL: "'.$uuid.
-                '" A SOLICITUD DEL USUARIO "'.$solicitante.'"'.
-                ($ticket !== '' ? ', MEDIANTE EL TICKET #'.$ticket.'.' : '.');
 
-            $this->db->query(
-                "INSERT INTO logs (idusuario, idsolicitud, tipomov, fecha) VALUES (?, ?, ?, NOW())",
-                [$idusuario, $idsolicitud, $msg]
-            );
-            }else{
-                $this->db->query(
-                "UPDATE solpagos SET idetapa = '10' WHERE idsolicitud = ?",
-                [$idsolicitud]
-            );
-            $msg = 'TIPO 1 SE ELIMINÓ COMPLEMENTO DE PAGO CON FOLIO FISCAL: "'.$uuid.
-                '" A SOLICITUD DEL USUARIO "'.$solicitante.'"'.
-                ($ticket !== '' ? ', MEDIANTE EL TICKET #'.$ticket.'.' : '.');
-
-            $this->db->query(
-                "INSERT INTO logs (idusuario, idsolicitud, tipomov, fecha) VALUES (?, ?, ?, NOW())",
-                [$idusuario, $idsolicitud, $msg]
-            );
-
-            }
-            
-
-        } else {
+        if ($metodo === 'PUE') {
             $this->db->query(
                 "DELETE FROM sol_factura WHERE idsolicitud = ? AND idfactura = ?",
                 [$idsolicitud, $idfactura]
@@ -1140,12 +1107,63 @@ class Consulta extends CI_Model
                     [$idusuario, $idsolicitud, $msg]
                 );
             }
+    }   else {
+        if ($tipoFactura == 1) {
+            // 1. Obtener hijas
+            $hijos = $this->obtenerHijos($idsolicitud);
+
+            // 2. Recorrer hijas y cancelar
+            foreach ($hijos as $hijo) {
+                $uuid_hijo_recortado = substr((string)$hijo['uuid'], 0, -2);
+                $this->db->query(
+                    "UPDATE facturas SET uuid = ?, tipo_factura = '0' WHERE idfactura = ?",
+                    [$uuid_hijo_recortado, $hijo['idfactura']]
+                );
+                
+                $msgHijo = 'SE ELIMINÓ COMPLEMENTO DE PAGO (HIJO) CON FOLIO FISCAL: "'.$hijo['uuid'].
+                '" A SOLICITUD DEL USUARIO "'.$solicitante.'"'.
+                ($ticket !== '' ? ', MEDIANTE EL TICKET #'.$ticket.'.' : '.');
+                $this->db->query(
+                    "INSERT INTO logs (idusuario, idsolicitud, tipomov, fecha) VALUES (?, ?, ?, NOW())",
+                    [$idusuario, $idsolicitud, $msgHijo]
+                );
+            }
         }
+
+       // 3. Cancelar factura padre (o tipo 2)
+
+
+        $this->db->query(
+                "UPDATE solpagos SET idetapa = '10' WHERE idsolicitud = ?",
+                [$idsolicitud]
+            );
+            $msg = 'SE ELIMINÓ COMPLEMENTO DE PAGO CON FOLIO FISCAL: "'.$uuid.
+                '" A SOLICITUD DEL USUARIO "'.$solicitante.'"'.
+                ($ticket !== '' ? ', MEDIANTE EL TICKET #'.$ticket.'.' : '.');
+
+            $this->db->query(
+                "INSERT INTO logs (idusuario, idsolicitud, tipomov, fecha) VALUES (?, ?, ?, NOW())",
+                [$idusuario, $idsolicitud, $msg]
+            );
+            
+        }
+
 
         $this->db->trans_complete();
         $ok = $this->db->trans_status();
 
         return ['ok' => $ok, 'msg' => $ok ? 'Cancelación realizada' : 'No se pudo cancelar'];
+    }
+
+    public function obtenerHijos($idsolicitud){
+        $sql = "SELECT idfactura, uuid
+
+
+                FROM facturas
+                WHERE idsolicitud = ?  AND tipo_factura = 2";
+
+        $query = $this->db->query($sql, [$idsolicitud]);
+        return $query->result_array();
     }
 
 

@@ -1786,43 +1786,77 @@ class Consultar extends CI_Controller
         $idsolicitud = $this->input->post('idsolicitud', true);
         $uuid        = $this->input->post('uuid', true);
         $metodo_cli  = strtoupper(trim((string)$this->input->post('metodo_pago', true)));
-        $idlog       = $this->input->post('idlog', true);
+        $tipoFactura = $this->input->post('tipo_factura', true);
         $ticket      = $this->input->post('ticket', true);
         $solicitante = $this->input->post('solicitante', true);
-        $tipoFactura = $this->input->post('tipo_factura', true);
+        $confirmado  = $this->input->post('confirmado', true);
 
         if (!$idfactura) {
             return $this->output->set_content_type('application/json')
-                ->set_output(json_encode(['ok' => false, 'msg' => 'Falta idfactura']));
+                ->set_output(json_encode(['ok'=>false,'msg'=>'Falta idfactura']));
         }
-// Agregado para validacion de permisos
+
         $usuario = $this->session->userdata('inicio_sesion') ?: [];
         $idusuario = $usuario['id'] ?? null;
         $nombreUsuario = $usuario['nombre'] ?? ($usuario['usuario'] ?? 'USUARIO');
+
         $fact = $this->Consulta->getFacturaById($idfactura);
         if (!$fact) {
             return $this->output->set_content_type('application/json')
-                ->set_output(json_encode(['ok' => false, 'msg' => 'Factura no encontrada']));
+                ->set_output(json_encode(['ok'=>false,'msg'=>'Factura no encontrada']));
         }
 
-        // Normaliza campos faltantes
-        $idsolicitud = $idsolicitud ?: ($fact->idsolicitud ?? null);
-        $uuid        = $uuid ?: ($fact->uuid ?? '');
+        $idsolicitud = $idsolicitud ?: $fact->idsolicitud;
+        $uuid        = $uuid ?: $fact->uuid;
         $metodo      = $metodo_cli ?: strtoupper(trim((string)($fact->metodo_pago ?: $fact->tipo_factura)));
+        $tipoFactura = $tipoFactura ?: $fact->tipo_factura;
+
+        // Si es padre + PPD y no viene confirmación, devolvemos hijas para mostrar confirmación en front
+        $confirmado = $this->input->post('confirmado', true);
+        if ($metodo === 'PPD' && $tipoFactura == 1 && !$confirmado) {
+            $hijos = $this->Consulta->obtenerHijos($idsolicitud);
+            return $this->output->set_content_type('application/json')
+                ->set_output(json_encode([
+                    'ok' => true,
+                    'padre' => ['idfactura'=>$idfactura,'uuid'=>$uuid],
+                    'hijos' => $hijos
+                ]));
+        }
+
+        // Confirmado → se procede con cancelación
         $res = $this->Consulta->cancelarFacturaPpdPue([
-            'idfactura'      => $idfactura,
-            'idsolicitud'    => $idsolicitud,
-            'uuid'           => $uuid,
-            'tipo_factura'   => $tipoFactura,
-            'metodo'         => $metodo,       
-            'idlog'          => $idlog,        
-            'idusuario'      => $idusuario,
-            'nombreUsuario'  => $nombreUsuario,
-            'solicitante'    => $solicitante, 
-            'ticket'         => $ticket, 
+            'idfactura'     => $idfactura,
+            'idsolicitud'   => $idsolicitud,
+            'uuid'          => $uuid,
+            'tipo_factura'  => $tipoFactura,
+            'metodo'        => $metodo,
+            'idusuario'     => $idusuario,
+            'nombreUsuario' => $nombreUsuario,
+            'solicitante'   => $solicitante,
+            'ticket'        => $ticket
         ]);
 
         return $this->output->set_content_type('application/json')
                             ->set_output(json_encode($res));
     }
+
+    public function obtenerHijos($idsolicitud = null)
+        {
+            $this->output->set_content_type('application/json');
+
+            if (empty($idsolicitud) || !is_numeric($idsolicitud)) {
+                $this->output->set_output(json_encode([
+                    'ok' => false,
+                    'msg' => 'Solicitud inválida'
+                ]));
+                return;
+            }
+
+            $hijos = $this->Consulta->obtenerHijos($idsolicitud);
+
+            $this->output->set_output(json_encode([
+                'ok' => true,
+                'hijos' => $hijos
+            ]));
+        }
 }
